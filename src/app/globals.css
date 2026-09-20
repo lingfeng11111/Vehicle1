@@ -1,0 +1,215 @@
+@import "tailwindcss";
+
+:root {
+  --background: #faf8f5;
+  --foreground: #1c1917;
+  --navy: #1c1917;
+  --navy-2: #292524;
+  --brand: #dc2626;
+  --brand-strong: #b91c1c;
+  --brand-soft: #fef2f2;
+  --copper: #d97706;
+  --copper-strong: #b45309;
+  --copper-soft: #fffbeb;
+  --teal: #059669;
+  --teal-soft: #ecfdf5;
+  --amber: #d97706;
+  --amber-soft: #fffbeb;
+  --danger: #dc2626;
+  --ink: #1c1917;
+  --muted: #f4efe6;
+  --muted-text: #78716c;
+  --line: #e7e1d7;
+  --line-warm: #efece5;
+  --surface: #ffffff;
+  --surface-blue: #fbf9f5;
+  --dashboard-charcoal: #1c1917;
+  --dashboard-surface: #faf7f2;
+  --dashboard-cloud: #ffffff;
+  --dashboard-red: #dc2626;
+  --dashboard-red-strong: #b91c1c;
+  --dashboard-red-soft: #fef2f2;
+  --dashboard-ink: #1c1917;
+  --dashboard-line: #e7e1d7;
+  --dashboard-muted: #78716c;
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --secondary: #f5efe6;
+  --secondary-foreground: var(--ink);
+  --accent: #fff7ed;
+  --accent-foreground: var(--copper-strong);
+  --destructive: var(--danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: rgba(220, 38, 38, 0.35);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --radius: 0.875rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted-text);
+  --color-muted-foreground: var(--muted-text);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-copper: var(--copper);
+  --color-copper-soft: var(--copper-soft);
+  --color-danger: var(--danger);
+  --color-ink: var(--ink);
+  --color-line: var(--line);
+  --color-surface: var(--surface);
+  --color-surface-blue: var(--surface-blue);
+  --color-dashboard-charcoal: var(--dashboard-charcoal);
+  --color-dashboard-surface: var(--dashboard-surface);
+  --color-dashboard-cloud: var(--dashboard-cloud);
+  --color-dashboard-red: var(--dashboard-red);
+  --color-dashboard-red-strong: var(--dashboard-red-strong);
+  --color-dashboard-red-soft: var(--dashboard-red-soft);
+  --color-dashboard-ink: var(--dashboard-ink);
+  --color-dashboard-line: var(--dashboard-line);
+  --color-dashboard-muted: var(--dashboard-muted);
+  --font-sans: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { background: #faf8f5; }
+  body { margin: 0; background: #faf8f5; color: var(--foreground); font-family: "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  button, input, textarea, select { font: inherit; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  a { text-decoration: none; }
+}
+
+::selection { background: #fecaca; color: #1c1917; }
+.workspace-scroll { scrollbar-color: #d6cfc4 transparent; scrollbar-width: thin; }
+.surface-panel {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 1.125rem;
+  background: #ffffff;
+  box-shadow: 0 4px 20px -2px rgba(28, 25, 23, 0.04), 0 2px 6px -1px rgba(28, 25, 23, 0.02);
+}
+.data-row { border-bottom: 1px solid var(--line-warm); transition: background-color 150ms ease; }
+.data-row:hover { background: #fffcf7; }
+.workspace-page { min-width: 0; width: 100%; }
+.workspace-page-header { margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+.workspace-page-header h2 { color: var(--ink); font-size: 1.75rem; font-weight: 650; letter-spacing: -0.045em; line-height: 1.1; }
+.workspace-page-header p { color: var(--muted-text); font-size: 0.875rem; }
+.workspace-page-header .workspace-kicker { color: var(--brand); font-size: 0.6875rem; font-weight: 650; letter-spacing: 0.12em; }
+.data-row:last-child { border-bottom: 0; }
+.print-only { display: none; }
+
+/* 纸质质检证书专用视感 */
+.certificate-paper-desk {
+  background-color: #f1ede6;
+  background-image: radial-gradient(#e4ded4 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.certificate-paper-sheet {
+  background: #ffffff;
+  box-shadow: 0 25px 50px -12px rgba(44, 38, 30, 0.18), 0 4px 16px rgba(44, 38, 30, 0.08);
+}
+.certificate-security-border {
+  border: 3px double #b45309;
+}
+
+.report-details > summary { list-style: none; }
+.report-details > summary::-webkit-details-marker { display: none; }
+.report-reader-header { padding: 0.25rem 0; }
+.report-reader-meta {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 4px 16px -2px rgba(28, 25, 23, 0.04);
+}
+.report-document {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 10px 30px -4px rgba(28, 25, 23, 0.06);
+}
+.report-document .surface-panel { overflow: visible; border: 0; border-bottom: 1px solid var(--line-warm); border-radius: 0; background: #ffffff; box-shadow: none; }
+.report-document .surface-panel:last-child { border-bottom: 0; }
+.report-document .report-details { border-top: 1px solid var(--line-warm); border-bottom: 0; }
+
+.report-generator-grid {
+  background-image: linear-gradient(rgba(180, 83, 9, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(180, 83, 9, 0.06) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+.report-generator-scanline {
+  background: linear-gradient(180deg, transparent 0%, rgba(245, 158, 11, 0.02) 38%, rgba(220, 38, 38, 0.12) 50%, rgba(245, 158, 11, 0.02) 62%, transparent 100%);
+  animation: report-generator-scan 3.8s linear infinite;
+}
+@keyframes report-generator-scan {
+  from { transform: translateY(-70%); }
+  to { transform: translateY(220%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .report-generator-scanline { animation: none; opacity: 0.2; }
+}
+
+@media print {
+  .no-print, aside, .mobile-nav, header, nav { display: none !important; }
+  .print-only { display: block; }
+  .print-avoid-break { break-inside: avoid; page-break-inside: avoid; }
+  .certificate-paper-desk { background: #ffffff !important; background-image: none !important; padding: 0 !important; }
+  .certificate-paper-sheet { box-shadow: none !important; border: 0 !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+  body { background: #ffffff !important; color: #111827 !important; }
+  @page { size: A4; margin: 10mm; }
+}
+
+/* ==========================================================================
+   全站触控设备（平板、手机）即时按压反馈强化
+   ========================================================================== */
+
+/* 消除所有触控设备上的 300ms 点击延迟与原生闪烁方块 */
+button, a, [role="button"], input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* 触控设备专属：为所有按钮、链接及可交互卡片赋予微触感按压弹性 */
+@media (hover: none) and (pointer: coarse) {
+  button:not(:disabled):active,
+  a:not([aria-disabled="true"]):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: scale(0.975);
+    opacity: 0.92;
+    transition: transform 60ms ease, opacity 60ms ease;
+  }
+
+  article:active,
+  .surface-panel:active,
+  .touch-card:active {
+    transform: scale(0.995);
+    transition: transform 80ms ease;
+  }
+}

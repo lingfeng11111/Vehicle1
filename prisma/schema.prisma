@@ -1,0 +1,553 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id            String           @id @default(cuid())
+  name          String
+  phone         String
+  sourceChannel String
+  sourceContent String?
+  status        String           @default("NEW")
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  demands       CustomerDemand[]
+  salesCases    SalesCase[]
+}
+
+model CustomerDemand {
+  id           String      @id @default(cuid())
+  customerId   String
+  budgetMin    Int?
+  budgetMax    Int?
+  usageScene   String
+  purchaseTime String
+  focusTags    String      @default("[]")
+  riskConcerns String      @default("[]")
+  profileJson  String      @default("{}")
+  remark       String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  customer     Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  salesCases   SalesCase[]
+}
+
+model Vehicle {
+  id               String                @id @default(cuid())
+  code             String                @unique
+  vin              String                @unique
+  plateNo          String
+  brand            String
+  series           String
+  model            String
+  modelYear        Int
+  registrationDate DateTime
+  mileage          Int
+  listingPrice     Int
+  coverImage       String?
+  displayTags      String                @default("[]")
+  energyType       String                @default("ICE")
+  status           String                @default("AVAILABLE")
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  inspections      Inspection[]
+  salesCases       SalesCase[]
+  marketSnapshots  MarketPriceSnapshot[]
+}
+
+model Inspection {
+  id                  String                         @id @default(cuid())
+  vehicleId           String
+  templateVersionId   String?
+  version             Int
+  inspectionDate      DateTime
+  inspectorName       String
+  reviewerName        String?
+  reviewedAt          DateTime?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  lastSavedAt         DateTime?
+  overallRiskLevel    String
+  summary             String
+  status              String                         @default("DRAFT")
+  createdAt           DateTime                       @default(now())
+  updatedAt           DateTime                       @updatedAt
+  vehicle             Vehicle                        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  templateVersion     InspectionTemplateVersion?     @relation(fields: [templateVersionId], references: [id], onDelete: Restrict)
+  items               InspectionItem[]
+  evidence            InspectionEvidence[]
+  evaluations         InspectionEvaluation[]
+  damageGroups        InspectionDamageGroup[]
+  accidentAssessments InspectionAccidentAssessment[]
+  standardReports     StandardReportSnapshot[]
+  reports             Report[]
+
+  @@unique([vehicleId, version])
+  @@index([templateVersionId])
+  @@index([vehicleId, status])
+}
+
+model InspectionItem {
+  id                      String                      @id @default(cuid())
+  inspectionId            String
+  checkItemId             String?
+  positionId              String?
+  zone                    String
+  category                String
+  itemName                String
+  result                  String
+  resultStatus            String                      @default("UNCHECKED")
+  // CRITERION requires a reached template criterion for ABNORMAL items.
+  // DIRECT is reserved for a documented item-level exception when the
+  // current template has no semantically matching criterion.
+  findingMode             String                      @default("CRITERION")
+  isAbnormal              Boolean                     @default(false)
+  severity                Int                         @default(0)
+  basePriority            Int                         @default(1)
+  professionalDescription String?
+  consumerExplanation     String?
+  futureRisk              String?
+  repairSuggestion        String?
+  estimatedRepairCost     Int?
+  notes                   String?
+  operatorName            String?
+  reviewerName            String?
+  checkedAt               DateTime?
+  reviewedAt              DateTime?
+  mediaUrl                String?
+  createdAt               DateTime                    @default(now())
+  updatedAt               DateTime                    @updatedAt
+  inspection              Inspection                  @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  checkItem               InspectionCheckItem?        @relation(fields: [checkItemId], references: [id], onDelete: Restrict)
+  position                InspectionTemplatePosition? @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  findings                InspectionFinding[]
+  evidence                InspectionEvidence[]
+
+  @@unique([inspectionId, checkItemId])
+  @@index([inspectionId, zone])
+  @@index([inspectionId, resultStatus])
+  @@index([checkItemId])
+  @@index([positionId])
+}
+
+// Template catalog. Definitions are immutable once a version is used by an inspection.
+model InspectionTemplate {
+  id              String                      @id @default(cuid())
+  code            String                      @unique
+  name            String
+  description     String?
+  templateType    String                      @default("VEHICLE_APPRAISAL")
+  energyTypeScope String                      @default("ALL")
+  active          Boolean                     @default(true)
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  versions        InspectionTemplateVersion[]
+}
+
+model InspectionTemplateVersion {
+  id                 String                      @id @default(cuid())
+  templateId         String
+  version            Int
+  status             String                      @default("DRAFT")
+  effectiveFrom      DateTime?
+  definitionSnapshot String?
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+  template           InspectionTemplate          @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  sections           InspectionTemplateSection[]
+  inspections        Inspection[]
+  standardReports    StandardReportSnapshot[]
+
+  @@unique([templateId, version])
+  @@index([templateId, status])
+}
+
+model InspectionTemplateSection {
+  id                String                       @id @default(cuid())
+  templateVersionId String
+  code              String
+  name              String
+  axis              String
+  sortOrder         Int                          @default(0)
+  description       String?
+  templateVersion   InspectionTemplateVersion    @relation(fields: [templateVersionId], references: [id], onDelete: Cascade)
+  positions         InspectionTemplatePosition[]
+
+  @@unique([templateVersionId, code])
+  @@index([templateVersionId, axis, sortOrder])
+}
+
+model InspectionTemplatePosition {
+  id                  String                    @id @default(cuid())
+  sectionId           String
+  code                String
+  name                String
+  side                String?
+  sortOrder           Int                       @default(0)
+  floodAggregationKey String?
+  section             InspectionTemplateSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  checkItems          InspectionCheckItem[]
+  inspectionItems     InspectionItem[]
+
+  @@unique([sectionId, code])
+  @@index([sectionId, sortOrder])
+  @@index([floodAggregationKey])
+}
+
+model InspectionCheckItem {
+  id                          String                     @id @default(cuid())
+  positionId                  String
+  code                        String
+  name                        String
+  category                    String
+  description                 String?
+  componentClass              String                     @default("OTHER")
+  accidentDecisionParticipant Boolean                    @default(false)
+  sortOrder                   Int                        @default(0)
+  active                      Boolean                    @default(true)
+  sourceSheet                 String?
+  sourceRow                   Int?
+  sourceSection               String?
+  sourceText                  String?
+  position                    InspectionTemplatePosition @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  criteria                    InspectionCriterion[]
+  inspectionItems             InspectionItem[]
+
+  @@unique([positionId, code])
+  @@index([positionId, sortOrder])
+}
+
+model InspectionCriterion {
+  id                           String              @id @default(cuid())
+  checkItemId                  String
+  code                         String
+  label                        String
+  axis                         String
+  criterionType                String
+  description                  String?
+  ruleKey                      String?
+  countsAsDistinctFloodFinding Boolean             @default(false)
+  hardStopCriterion            Boolean             @default(false)
+  sortOrder                    Int                 @default(0)
+  active                       Boolean             @default(true)
+  sourceSheet                  String?
+  sourceRow                    Int?
+  sourceColumn                 String?
+  sourcePartIndex              Int                 @default(1)
+  sourceText                   String?
+  sourceNote                   String?
+  checkItem                    InspectionCheckItem @relation(fields: [checkItemId], references: [id], onDelete: Cascade)
+  findings                     InspectionFinding[]
+
+  @@unique([checkItemId, code])
+  @@index([criterionType])
+}
+
+model RiskTag {
+  id               String  @id @default(cuid())
+  code             String  @unique
+  name             String
+  category         String
+  defaultSeverity  Int
+  defaultPriority  Int
+  consumerTemplate String
+  active           Boolean @default(true)
+}
+
+// One row represents one selected criterion for one executed inspection item.
+// Multiple rows on the same item are intentional, especially for flood findings.
+model InspectionFinding {
+  id                 String                        @id @default(cuid())
+  inspectionItemId   String
+  criterionId        String
+  status             String                        @default("REACHED")
+  valueText          String?
+  note               String?
+  selectedBy         String?
+  selectedAt         DateTime                      @default(now())
+  updatedAt          DateTime                      @updatedAt
+  inspectionItem     InspectionItem                @relation(fields: [inspectionItemId], references: [id], onDelete: Cascade)
+  criterion          InspectionCriterion           @relation(fields: [criterionId], references: [id], onDelete: Restrict)
+  evidence           InspectionEvidence[]
+  accidentAssessment InspectionAccidentAssessment?
+
+  @@unique([inspectionItemId, criterionId])
+  @@index([criterionId, status])
+  @@index([inspectionItemId, status])
+}
+
+model InspectionEvidence {
+  id               String             @id @default(cuid())
+  inspectionId     String
+  inspectionItemId String?
+  findingId        String?
+  uri              String
+  mediaType        String
+  caption          String?
+  capturedBy       String?
+  capturedAt       DateTime           @default(now())
+  createdAt        DateTime           @default(now())
+  inspection       Inspection         @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  inspectionItem   InspectionItem?    @relation(fields: [inspectionItemId], references: [id], onDelete: SetNull)
+  finding          InspectionFinding? @relation(fields: [findingId], references: [id], onDelete: SetNull)
+
+  @@index([inspectionId, capturedAt])
+  @@index([inspectionItemId])
+  @@index([findingId])
+}
+
+// Optional inspector-confirmed grouping for co-located or continuous damage.
+// It is a review aid, not an automatically accumulated point bucket.
+model InspectionDamageGroup {
+  id           String                         @id @default(cuid())
+  inspectionId String
+  groupCode    String
+  label        String
+  notes        String?
+  confirmedBy  String?
+  confirmedAt  DateTime?
+  createdAt    DateTime                       @default(now())
+  inspection   Inspection                     @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  assessments  InspectionAccidentAssessment[]
+
+  @@unique([inspectionId, groupCode])
+  @@index([inspectionId, confirmedAt])
+}
+
+// Explicit component × defect accident classification. There is deliberately no
+// generic accident-point total here; rule evaluation decides how these rows combine.
+model InspectionAccidentAssessment {
+  id                  String                 @id @default(cuid())
+  inspectionId        String
+  findingId           String                 @unique
+  damageGroupId       String?
+  classification      String                 @default("NONE")
+  decisionParticipant Boolean                @default(false)
+  notes               String?
+  confirmedBy         String?
+  confirmedAt         DateTime?
+  inspection          Inspection             @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  finding             InspectionFinding      @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  damageGroup         InspectionDamageGroup? @relation(fields: [damageGroupId], references: [id], onDelete: SetNull)
+
+  @@index([inspectionId, classification, decisionParticipant])
+  @@index([damageGroupId])
+}
+
+model AppraisalRuleSet {
+  id          String                    @id @default(cuid())
+  code        String                    @unique
+  name        String
+  description String?
+  active      Boolean                   @default(true)
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  versions    AppraisalRuleSetVersion[]
+}
+
+model AppraisalRuleSetVersion {
+  id            String                 @id @default(cuid())
+  ruleSetId     String
+  version       Int
+  status        String                 @default("DRAFT")
+  configJson    String
+  effectiveFrom DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  ruleSet       AppraisalRuleSet       @relation(fields: [ruleSetId], references: [id], onDelete: Cascade)
+  evaluations   InspectionEvaluation[]
+
+  @@unique([ruleSetId, version])
+  @@index([ruleSetId, status])
+}
+
+model InspectionEvaluation {
+  id                        String                   @id @default(cuid())
+  inspectionId              String
+  ruleSetVersionId          String
+  version                   Int
+  status                    String                   @default("COMPLETED")
+  legalTradeabilityStatus   String                   @default("UNASSESSED")
+  hardStop                  Boolean                  @default(false)
+  hardStopCode              String?
+  accidentClassification    String                   @default("NONE")
+  floodStatus               String                   @default("UNASSESSED")
+  floodFindingCount         Int                      @default(0)
+  currentSafetyConclusion   String                   @default("UNASSESSED")
+  functionConclusion        String                   @default("UNASSESSED")
+  circulationRecommendation String                   @default("UNASSESSED")
+  recommendationReason      String?
+  outcomeJson               String                   @default("{}")
+  evaluatedAt               DateTime                 @default(now())
+  evaluatorName             String?
+  inspection                Inspection               @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  ruleSetVersion            AppraisalRuleSetVersion  @relation(fields: [ruleSetVersionId], references: [id], onDelete: Restrict)
+  outcomes                  InspectionRuleOutcome[]
+  standardReports           StandardReportSnapshot[]
+
+  @@unique([inspectionId, version])
+  @@index([inspectionId, evaluatedAt])
+  @@index([ruleSetVersionId, status])
+}
+
+model InspectionRuleOutcome {
+  id           String               @id @default(cuid())
+  evaluationId String
+  code         String
+  axis         String
+  status       String
+  isBlocking   Boolean              @default(false)
+  valueText    String?
+  reason       String?
+  detailsJson  String               @default("{}")
+  createdAt    DateTime             @default(now())
+  evaluation   InspectionEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluationId, code])
+  @@index([evaluationId, axis, isBlocking])
+}
+
+// Immutable standard facts/decision document for one inspection version.
+model StandardReportSnapshot {
+  id                  String                       @id @default(cuid())
+  inspectionId        String
+  evaluationId        String
+  templateVersionId   String
+  version             Int
+  snapshotVersion     String                       @default("1.0.0")
+  snapshotJson        String
+  generatedAt         DateTime                     @default(now())
+  generatedBy         String?
+  inspection          Inspection                   @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  evaluation          InspectionEvaluation         @relation(fields: [evaluationId], references: [id], onDelete: Restrict)
+  templateVersion     InspectionTemplateVersion    @relation(fields: [templateVersionId], references: [id], onDelete: Restrict)
+  personalizedReports PersonalizedReportSnapshot[]
+  legacyReports       Report[]                     @relation("ReportStandardSnapshot")
+
+  @@unique([inspectionId, version])
+  @@index([inspectionId, generatedAt])
+  @@index([evaluationId])
+}
+
+// Personalized explanation/order/fit snapshot. It must always point to the
+// standard snapshot that supplied the facts and non-personalized decision gates.
+model PersonalizedReportSnapshot {
+  id                       String                 @id @default(cuid())
+  salesCaseId              String
+  standardReportSnapshotId String
+  version                  Int
+  snapshotVersion          String                 @default("1.0.0")
+  focusTagsJson            String                 @default("[]")
+  generationMethod         String                 @default("RULE_ENGINE")
+  snapshotJson             String
+  generatedAt              DateTime               @default(now())
+  generatedBy              String?
+  salesCase                SalesCase              @relation(fields: [salesCaseId], references: [id], onDelete: Cascade)
+  standardReportSnapshot   StandardReportSnapshot @relation(fields: [standardReportSnapshotId], references: [id], onDelete: Restrict)
+  legacyReports            Report[]               @relation("ReportPersonalizedSnapshot")
+
+  @@unique([salesCaseId, version])
+  @@index([standardReportSnapshotId, generatedAt])
+}
+
+model SalesCase {
+  id                  String                       @id
+  customerId          String
+  demandId            String
+  vehicleId           String
+  sourceChannel       String
+  stage               String                       @default("INTERESTED")
+  result              String                       @default("IN_PROGRESS")
+  lostReason          String?
+  createdAt           DateTime                     @default(now())
+  updatedAt           DateTime                     @updatedAt
+  customer            Customer                     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  demand              CustomerDemand               @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  vehicle             Vehicle                      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  reports             Report[]
+  personalizedReports PersonalizedReportSnapshot[]
+  events              SalesEvent[]
+
+  @@index([customerId, vehicleId])
+}
+
+model Report {
+  id                           String                      @id @default(cuid())
+  salesCaseId                  String
+  inspectionId                 String
+  standardReportSnapshotId     String?
+  personalizedReportSnapshotId String?
+  version                      Int
+  reportMode                   String                      @default("PERSONALIZED")
+  highlightTags                String                      @default("[]")
+  generatedSnapshot            String
+  generatedAt                  DateTime                    @default(now())
+  salesCase                    SalesCase                   @relation(fields: [salesCaseId], references: [id], onDelete: Cascade)
+  inspection                   Inspection                  @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  standardReportSnapshot       StandardReportSnapshot?     @relation("ReportStandardSnapshot", fields: [standardReportSnapshotId], references: [id], onDelete: Restrict)
+  personalizedReportSnapshot   PersonalizedReportSnapshot? @relation("ReportPersonalizedSnapshot", fields: [personalizedReportSnapshotId], references: [id], onDelete: Restrict)
+
+  @@unique([salesCaseId, version])
+  @@index([standardReportSnapshotId])
+  @@index([personalizedReportSnapshotId])
+}
+
+model SalesEvent {
+  id          String    @id @default(cuid())
+  salesCaseId String
+  eventType   String
+  eventTime   DateTime  @default(now())
+  metadata    String    @default("{}")
+  salesCase   SalesCase @relation(fields: [salesCaseId], references: [id], onDelete: Cascade)
+
+  @@index([salesCaseId, eventTime])
+}
+
+model MarketPriceSnapshot {
+  id                    String   @id @default(cuid())
+  vehicleId             String
+  newCarReferencePrice  Int
+  marketLow             Int
+  marketMedian          Int
+  marketHigh            Int
+  conditionAdjustedLow  Int
+  conditionAdjustedHigh Int
+  source                String
+  capturedAt            DateTime @default(now())
+  vehicle               Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, capturedAt])
+}
+
+model MediaAsset {
+  id           String   @id @default(cuid())
+  assetKey     String?  @unique
+  filename     String
+  originalName String?
+  mediaType    String
+  byteSize     Int
+  data         Bytes
+  source       String   @default("UPLOAD")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([source])
+}
+
+model MediaSource {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  name          String
+  active        Boolean  @default(true)
+  leads         Int      @default(0)
+  consultations Int      @default(0)
+  reports       Int      @default(0)
+  conversions   Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
