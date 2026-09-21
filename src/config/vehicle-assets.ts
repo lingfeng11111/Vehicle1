@@ -15,6 +15,13 @@ export type VehicleVisualSource = {
 };
 
 const mediaAssetUrl = (assetKey: string) => `/api/media/${assetKey}`;
+const kiaK3Cover001 = "/api/media/cmu0zmttg0008uc2k092rtsdd";
+const kiaK3Cover926 = "/api/media/cmu95qyix0009uc3s1owl6jjr";
+const kiaK3InteriorGallery = [
+  { url: mediaAssetUrl("vehicle-926-engine-bay"), label: "发动机舱" },
+  { url: mediaAssetUrl("vehicle-926-dashboard"), label: "仪表台" },
+  { url: mediaAssetUrl("vehicle-926-interior"), label: "内饰" },
+];
 
 export const VEHICLE_IMAGE_MAP: Record<string, VehicleVisualAsset> = {
   V001: {
@@ -233,16 +240,19 @@ export const VEHICLE_IMAGE_MAP: Record<string, VehicleVisualAsset> = {
     typeTag: "豪华动感轿车",
     colorTone: "#eee7e8",
   },
+  "001": {
+    // 起亚 K3：保留本车外观封面，并与 926 档案共用内饰/机舱照片
+    coverUrl: kiaK3Cover001,
+    gallery: [kiaK3Cover001, ...kiaK3InteriorGallery.map((image) => image.url)],
+    galleryLabels: ["外观", ...kiaK3InteriorGallery.map((image) => image.label)],
+    typeTag: "韩系通勤车",
+    colorTone: "#e6eaec",
+  },
   "926": {
     // 起亚 K3：档案封面保留目标车辆原外观图，后续展示该车的机舱、仪表台与内饰
-    coverUrl: "/api/media/cmu95qyix0009uc3s1owl6jjr",
-    gallery: [
-      "/api/media/cmu95qyix0009uc3s1owl6jjr",
-      mediaAssetUrl("vehicle-926-engine-bay"),
-      mediaAssetUrl("vehicle-926-dashboard"),
-      mediaAssetUrl("vehicle-926-interior"),
-    ],
-    galleryLabels: ["外观", "发动机舱", "仪表台", "内饰"],
+    coverUrl: kiaK3Cover926,
+    gallery: [kiaK3Cover926, ...kiaK3InteriorGallery.map((image) => image.url)],
+    galleryLabels: ["外观", ...kiaK3InteriorGallery.map((image) => image.label)],
     typeTag: "韩系通勤车",
     colorTone: "#e6eaec",
   },
