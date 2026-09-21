@@ -44,10 +44,12 @@ export async function GET() {
     },
   });
 
-  const virtualReports = orphanInspections.map((inspection) => {
+  const virtualReports = orphanInspections.flatMap((inspection) => {
     const snap = inspection.standardReports[0];
+    if (!snap) return [];
+
     const { templateVersion, ...inspectionRest } = inspection as typeof inspection & { templateVersion: unknown };
-    return {
+    return [{
       id: `sys-${inspection.id}`,
       salesCaseId: null as string | null,
       inspectionId: inspection.id,
@@ -56,8 +58,8 @@ export async function GET() {
       version: 1,
       reportMode: "STANDARD" as const,
       highlightTags: "[]",
-      generatedSnapshot: snap?.snapshotJson ?? "{}",
-      generatedAt: snap?.generatedAt ?? inspection.updatedAt,
+      generatedSnapshot: snap.snapshotJson,
+      generatedAt: snap.generatedAt,
       salesCase: {
         customer: { id: "sys", name: "系统综合鉴定", phone: "", sourceChannel: "SYSTEM", status: "COMPLETED" },
         vehicle: inspection.vehicle,
@@ -66,9 +68,9 @@ export async function GET() {
         ...inspectionRest,
         templateItemCount: templateVersion ? countTemplateItems(templateVersion as never) : 0,
       },
-      standardReportSnapshot: snap ? { id: snap.id, version: snap.version, snapshotVersion: snap.snapshotVersion } : null,
+      standardReportSnapshot: { id: snap.id, version: snap.version, snapshotVersion: snap.snapshotVersion },
       personalizedReportSnapshot: null,
-    };
+    }];
   });
 
   const all = [...reports, ...virtualReports].sort(

@@ -3,6 +3,38 @@ import { normalizeSnapshotFacts } from "@/services/inspection-result";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  if (id.startsWith("sys-")) {
+    const inspectionId = id.slice("sys-".length);
+    const inspection = await db.inspection.findUnique({
+      where: { id: inspectionId },
+      include: {
+        vehicle: true,
+        standardReports: { orderBy: { version: "desc" }, take: 1 },
+      },
+    });
+    const standardReport = inspection?.standardReports[0];
+    if (!inspection || inspection.status !== "COMPLETED" || !standardReport) {
+      return Response.json({ error: "报告不存在" }, { status: 404 });
+    }
+
+    const standardSnapshot = normalizeSnapshotFacts(JSON.parse(standardReport.snapshotJson));
+    return Response.json({
+      id,
+      version: standardReport.version,
+      generatedAt: standardReport.generatedAt,
+      salesCase: {
+        id,
+        result: "COMPLETED",
+        customer: { id: "sys", name: "系统综合鉴定" },
+        vehicle: inspection.vehicle,
+      },
+      snapshot: standardSnapshot,
+      standardSnapshot,
+      personalizedSnapshot: null,
+    });
+  }
+
   const report = await db.report.findUnique({ where: { id }, include: { salesCase: { include: { customer: true, demand: true, vehicle: true, events: { orderBy: { eventTime: "desc" } } } }, inspection: true, standardReportSnapshot: true, personalizedReportSnapshot: true } });
   if (!report) return Response.json({ error: "报告不存在" }, { status: 404 });
   const standardSnapshot = report.standardReportSnapshot ? normalizeSnapshotFacts(JSON.parse(report.standardReportSnapshot.snapshotJson)) : null;

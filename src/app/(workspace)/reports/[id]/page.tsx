@@ -286,13 +286,21 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
     return (
       <div className="certificate-paper-desk min-h-screen py-16 text-center">
         <p className="text-base font-bold text-red-600">{error}</p>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="mt-4 inline-flex items-center rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-700"
-        >
-          重新加载
-        </button>
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="inline-flex items-center rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-700"
+          >
+            重新加载
+          </button>
+          <Link
+            href="/reports"
+            className="inline-flex items-center rounded-xl border border-stone-200 bg-white px-4 py-2 text-xs font-semibold text-stone-700 shadow-sm hover:bg-stone-50"
+          >
+            返回消费者报告
+          </Link>
+        </div>
       </div>
     );
   }
@@ -315,6 +323,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
     : [];
   const standardFacts = factsFromSnapshot(standardSnapshot);
   const standardInspection = standardSnapshot.inspection ?? {};
+  const isSystemReport = data.id.startsWith("sys-");
   const disclaimer = "本报告根据现场检查结果和市场参考信息整理，用于了解车况与购车风险；实际购买前请现场看车、试驾并以合同为准。";
   const vehicleCode =
     stringValue(vehicle.code) ??
@@ -331,11 +340,11 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
       {/* 顶部桌面浮动操作栏 (不参与打印) */}
       <div className="no-print max-w-4xl 2xl:max-w-5xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-3 bg-white/95 backdrop-blur-md px-5 py-3 rounded-2xl border border-stone-200/80 shadow-sm">
         <Link
-          href={`/customers/${data.salesCase.customer.id}`}
+          href={isSystemReport ? "/reports" : `/customers/${data.salesCase.customer.id}`}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-red-700 transition-colors"
         >
           <ArrowLeft className="size-4" />
-          返回客户档案
+          {isSystemReport ? "返回消费者报告" : "返回客户档案"}
         </Link>
 
         {/* 视角切换器 */}
