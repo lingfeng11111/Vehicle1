@@ -40,6 +40,7 @@ export default function VehiclesPage() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const ORDER_KEY = "vehicle-display-order-v1";
+  const KIA_926_PLACEMENT_KEY = "vehicle-display-order-926-row3-second-v1";
 
   const loadOrder = (): string[] => {
     if (typeof window === "undefined") return [];
@@ -68,6 +69,17 @@ export default function VehiclesPage() {
     }
   };
 
+  const moveVehicleToIndex = (list: Vehicle[], code: string, targetIndex: number): Vehicle[] => {
+    const currentIndex = list.findIndex((vehicle) => vehicle.code === code);
+    if (currentIndex < 0 || currentIndex === targetIndex) return list;
+
+    const next = [...list];
+    const [vehicle] = next.splice(currentIndex, 1);
+    if (!vehicle) return list;
+    next.splice(Math.min(targetIndex, next.length), 0, vehicle);
+    return next;
+  };
+
   const handleDrop = (dropIndex: number) => {
     if (dragIndex === null || dragIndex === dropIndex) return;
     const next = [...vehicles];
@@ -81,7 +93,29 @@ export default function VehiclesPage() {
   const load = () =>
     fetch("/api/vehicles")
       .then((response) => response.json())
-      .then((data: Vehicle[]) => setVehicles(applyOrder(Array.isArray(data) ? data : [], loadOrder())))
+      .then((data: Vehicle[]) => {
+        const orderedVehicles = applyOrder(Array.isArray(data) ? data : [], loadOrder());
+        let placementDone = false;
+        try {
+          placementDone = window.localStorage.getItem(KIA_926_PLACEMENT_KEY) === "done";
+        } catch {
+          /* continue without browser persistence */
+        }
+
+        if (!placementDone && orderedVehicles.some((vehicle) => vehicle.code === "926")) {
+          const next = moveVehicleToIndex(orderedVehicles, "926", 7);
+          setVehicles(next);
+          persistOrder(next);
+          try {
+            window.localStorage.setItem(KIA_926_PLACEMENT_KEY, "done");
+          } catch {
+            /* continue without browser persistence */
+          }
+          return;
+        }
+
+        setVehicles(orderedVehicles);
+      })
       .catch(() => setVehicles([]));
 
   useEffect(() => {
