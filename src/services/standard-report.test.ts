@@ -111,4 +111,28 @@ describe("standard report materialization", () => {
 
     expect(materialized.find((item) => item.checkItemId === standardTemplate[0]?.id)?.result).toBe("凹陷≥3cm²");
   });
+
+  it("preserves video paths and the requested structural item order in report facts", () => {
+    const standardTemplate = templateItems(TEMPLATE_DEFINITIONS.standard);
+    const priorityByName = new Map([
+      ["左前纵梁", 7],
+      ["左前翼子板骨架", 6],
+      ["右前翼子板骨架", 5],
+    ]);
+    const videos = [...priorityByName].map(([name, basePriority]) => {
+      const templateItem = standardTemplate.find((item) => item.name === name);
+      if (!templateItem) throw new Error(`Missing template item: ${name}`);
+      return {
+        ...execution(templateItem, true),
+        severity: 3,
+        basePriority,
+        mediaUrl: `/k3-evidence/${name}.mp4`,
+      };
+    });
+
+    const document = buildStandardReportDocument(standardInput(standardTemplate, videos));
+
+    expect(document.facts.slice(0, 3).map((fact) => fact.itemName)).toEqual([...priorityByName.keys()]);
+    expect(document.facts.slice(0, 3).map((fact) => fact.mediaUrl)).toEqual(videos.map((item) => item.mediaUrl));
+  });
 });

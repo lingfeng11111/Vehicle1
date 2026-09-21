@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, Clock3, Eye, Images, MessageCircle, Play, Search } from "lucide-react";
 import { MEDIA_POSTS, type MediaPost } from "@/data/media-sandbox";
-
-const thumbnailTones = ["#e6eaec", "#eee7e8", "#e9ece7", "#ede9e4"];
 
 export default function MediaContentPage() {
   const [selected, setSelected] = useState<MediaPost>(MEDIA_POSTS[0]);
@@ -29,7 +28,7 @@ export default function MediaContentPage() {
               onClick={() => setSelected(post)}
               className={`self-start overflow-hidden rounded-[18px] border bg-white text-left shadow-[0_7px_20px_rgba(28,35,40,.04)] transition-all hover:-translate-y-0.5 ${selected.id === post.id ? "border-dashboard-red shadow-[0_10px_26px_rgba(179,38,48,.1)] ring-1 ring-dashboard-red" : "border-dashboard-line"}`}
             >
-              <Thumbnail post={post} tone="" index={index} />
+              <Thumbnail post={post} index={index} />
               <div className="p-4">
                 <div className="flex items-center justify-between text-[10px] text-dashboard-muted">
                   <span className="rounded-md bg-dashboard-surface px-2 py-1 font-medium">{post.type}</span>
@@ -74,15 +73,14 @@ export default function MediaContentPage() {
   </div></main>;
 }
 
-function Thumbnail({ post, index }: { post: MediaPost; tone: string; index: number }) {
-  const seed = (index + 1) * 37 + 100;
-  const cover = `https://loremflickr.com/640/400/usedcar,inspection?lock=${seed}`;
+function Thumbnail({ post, index }: { post: MediaPost; index: number }) {
+  const cover = post.coverUrl ?? "/v001-photos/cover.jpg";
   const isImagePost = post.type === "图文笔记";
   return <div className="relative aspect-[16/10] overflow-hidden bg-stone-200">
     {post.mediaUrl ? (
       <video src={post.mediaUrl} autoPlay loop muted playsInline className="h-full w-full object-cover" />
     ) : (
-      <img src={cover} alt={post.title} className="h-full w-full object-cover" loading="lazy" />
+      <Image src={cover} alt={post.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
     )}
     <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(31,38,42,.5),transparent)]" />
     <div className="absolute left-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium text-dashboard-ink shadow-sm">{post.platform}{isImagePost ? " · 图文" : ""}</div>

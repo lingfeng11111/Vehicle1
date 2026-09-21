@@ -216,7 +216,11 @@ describe("inspection route", () => {
       "prisma/migrations/20260912200000_align_inspection_facts/migration.sql",
       "prisma/migrations/20260912211500_add_vehicle_display_tags/migration.sql",
     ].map((file) => readFileSync(path.join(projectRoot, file), "utf8")).join("\n");
-    execFileSync("sqlite3", [testDatabasePath], { cwd: projectRoot, input: `${migrationSql}\nPRAGMA foreign_keys = ON;` });
+    const initializeSqlite = "const { DatabaseSync } = require('node:sqlite'); const fs = require('node:fs'); const db = new DatabaseSync(process.argv[1]); try { db.exec(fs.readFileSync(0, 'utf8')); } finally { db.close(); }";
+    execFileSync(process.execPath, ["-e", initializeSqlite, testDatabasePath], {
+      cwd: projectRoot,
+      input: `${migrationSql}\nPRAGMA foreign_keys = ON;`,
+    });
     testDb = new PrismaClient({ datasources: { db: { url: testDatabaseUrl } } });
     await testDb.$connect();
 

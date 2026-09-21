@@ -22,6 +22,7 @@ export type StandardReportExecutionItem = {
   repairSuggestion: string | null;
   estimatedRepairCost: number | null;
   notes: string | null;
+  mediaUrl?: string | null;
   operatorName: string | null;
   reviewerName: string | null;
   findings: Array<{
@@ -64,6 +65,7 @@ export function materializeStandardReportItems(
       repairSuggestion: defaults.repairSuggestion,
       estimatedRepairCost: null,
       notes: null,
+      mediaUrl: null,
       operatorName: null,
       reviewerName: null,
       findings: [],
@@ -183,6 +185,7 @@ export function buildStandardReportDocument(input: StandardReportInput) {
         isAbnormal: item.isAbnormal,
         severity: item.severity,
         basePriority: item.basePriority,
+        mediaUrl: item.mediaUrl ?? null,
         ...(item.resultStatus === "ABNORMAL" && item.isAbnormal
           ? {
               professionalDescription: item.professionalDescription,

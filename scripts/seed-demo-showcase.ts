@@ -1548,7 +1548,7 @@ async function seedShowcase() {
   for (const baseCust of baseCustomers) {
     const dem = baseCust.demands[0];
     if (dem) {
-      let existingProfile: Record<string, any> = {};
+      let existingProfile: Record<string, unknown> = {};
       try {
         if (dem.profileJson) existingProfile = JSON.parse(dem.profileJson);
       } catch {}

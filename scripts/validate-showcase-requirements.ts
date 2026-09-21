@@ -10,11 +10,11 @@ async function runAcceptanceChecks() {
   try {
     matchVehicleForDemand([], {});
     throw new Error("FAIL: 空车库时未抛出错误");
-  } catch (e: any) {
-    if (e.message.includes("当前车库暂无在售车辆，无法完成自动匹配")) {
-      console.log("✓ 1. 空车库时能返回明确错误:", e.message);
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes("当前车库暂无在售车辆，无法完成自动匹配")) {
+      console.log("✓ 1. 空车库时能返回明确错误:", error.message);
     } else {
-      throw e;
+      throw error;
     }
   }
 

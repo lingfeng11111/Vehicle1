@@ -203,11 +203,11 @@ async function verifyFixedDemoState(databaseUrl: string) {
 async function main() {
   assertSafeRepository();
   const databaseUrl = resolveDemoDatabaseUrl();
-  const prismaBinary = join(repoRoot, "node_modules", ".bin", process.platform === "win32" ? "prisma.cmd" : "prisma");
-  if (!existsSync(prismaBinary)) fail("未找到本地 Prisma CLI，请先安装依赖。");
+  const prismaEntrypoint = join(repoRoot, "node_modules", "prisma", "build", "index.js");
+  if (!existsSync(prismaEntrypoint)) fail("未找到本地 Prisma CLI，请先安装依赖。");
 
   console.log("Resetting local demo database: " + relative(repoRoot, expectedDatabasePath));
-  const result = spawnSync(prismaBinary, ["migrate", "reset", "--force", "--schema", schemaPath], {
+  const result = spawnSync(process.execPath, [prismaEntrypoint, "migrate", "reset", "--force", "--schema", schemaPath], {
     cwd: repoRoot,
     env: { ...process.env, DATABASE_URL: databaseUrl },
     stdio: "inherit",

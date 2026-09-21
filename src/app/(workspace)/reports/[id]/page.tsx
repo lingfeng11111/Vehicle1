@@ -185,6 +185,16 @@ function itemField(item: InspectionItemData, key: string) {
   return stringValue((item as unknown as JsonRecord)[key]);
 }
 
+function itemEvidenceMedia(item: InspectionItemData) {
+  const evidence = recordsAt((item as unknown as JsonRecord).evidence);
+  const media = evidence.find((record) => typeof record.uri === "string" && record.uri.trim());
+  if (!media || typeof media.uri !== "string") return null;
+  return {
+    uri: media.uri,
+    mediaType: typeof media.mediaType === "string" ? media.mediaType : "",
+  };
+}
+
 function snapshotFactStatus(item: InspectionItemData): InspectionStatus {
   const status = stringValue((item as unknown as JsonRecord).resultStatus);
   if (isInspectionStatus(status)) return status;
@@ -1076,15 +1086,18 @@ function InspectionFactsCatalog({ facts }: { facts: InspectionItemData[] }) {
                   {getInspectionSeverityLabel(item.severity)}
                 </td>
                 <td className="px-3 py-2 text-stone-700 leading-relaxed text-[11px] align-middle">
-                  <div>{item.consumerExplanation || item.professionalDescription || (itemField(item, "mediaUrl") ? "" : "当前未发现异常。")}</div>
+                  <div>{item.consumerExplanation || item.professionalDescription || (isRiskSnapshotFact(item) ? "" : "当前未发现异常。")}</div>
                   {isRiskSnapshotFact(item) &&
                     (() => {
-                      const myMedia = itemField(item, "mediaUrl");
+                      const evidenceMedia = itemEvidenceMedia(item);
+                      const myMedia = itemField(item, "mediaUrl") ?? evidenceMedia?.uri;
                       const ev = findDamageEvidence(item.itemName, itemField(item, "zone") ?? itemField(item, "category") ?? "");
+                      const isVideo = Boolean(evidenceMedia && evidenceMedia.uri === myMedia && evidenceMedia.mediaType.startsWith("video/"))
+                        || Boolean(myMedia && /\.(mp4|webm|mov)$/i.test(myMedia));
                       return (
                         <div className="mt-2 max-w-[220px]">
                           {myMedia ? (
-                            String(myMedia).endsWith(".mp4") ? (
+                            isVideo ? (
                               <video src={String(myMedia)} autoPlay loop muted playsInline className="w-full rounded-lg border border-stone-200" />
                             ) : (
                               <img src={String(myMedia)} alt={item.itemName} className="w-full rounded-lg border border-stone-200" />
