@@ -163,8 +163,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
               marketLow: price.marketLow,
               marketMedian: price.marketMedian,
               marketHigh: price.marketHigh,
-              conditionAdjustedLow: Math.round(price.marketMedian * lowF),
-              conditionAdjustedHigh: Math.round(price.marketMedian * highF),
+              conditionAdjustedLow: price.conditionAdjustedLow ?? Math.round(price.marketMedian * lowF),
+              conditionAdjustedHigh: price.conditionAdjustedHigh ?? Math.round(price.marketMedian * highF),
             }
           : s,
       )
@@ -176,8 +176,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
             marketLow: price.marketLow,
             marketMedian: price.marketMedian,
             marketHigh: price.marketHigh,
-            conditionAdjustedLow: Math.round(price.marketMedian * lowF),
-            conditionAdjustedHigh: Math.round(price.marketMedian * highF),
+            conditionAdjustedLow: price.conditionAdjustedLow ?? Math.round(price.marketMedian * lowF),
+            conditionAdjustedHigh: price.conditionAdjustedHigh ?? Math.round(price.marketMedian * highF),
             source: "市场行情参考",
             capturedAt: new Date(),
             createdAt: new Date(),

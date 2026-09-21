@@ -131,8 +131,8 @@ export async function GET() {
               marketLow: price.marketLow,
               marketMedian: price.marketMedian,
               marketHigh: price.marketHigh,
-              conditionAdjustedLow: Math.round(price.marketMedian * 0.61),
-              conditionAdjustedHigh: Math.round(price.marketMedian * 0.69),
+              conditionAdjustedLow: price.conditionAdjustedLow ?? Math.round(price.marketMedian * 0.61),
+              conditionAdjustedHigh: price.conditionAdjustedHigh ?? Math.round(price.marketMedian * 0.69),
             }
           : snap,
       );

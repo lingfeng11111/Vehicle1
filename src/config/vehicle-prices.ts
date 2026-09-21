@@ -1,14 +1,21 @@
 // 真实新车指导价与当前二手车市场卖价（2026 年行情）
 // newCarPrice: 当年款（或最后生产年款）厂商指导价，元
 // marketLow/median/high: 当前二手车市场实际成交区间，元
-// 车况调整区间由 API 层根据 median ±5%~8% 自动生成
+// 车况调整区间默认由 API 层按车辆情况生成；需要固定展示值的车型可显式配置。
 export const VEHICLE_PRICE_MAP: Record<
   string,
-  { newCarPrice: number; marketLow: number; marketMedian: number; marketHigh: number }
+  {
+    newCarPrice: number;
+    marketLow: number;
+    marketMedian: number;
+    marketHigh: number;
+    conditionAdjustedLow?: number;
+    conditionAdjustedHigh?: number;
+  }
 > = {
-  // 2013 款起亚 K3 两条档案共用同一组市场参考价
-  "001": { newCarPrice: 143800, marketLow: 15000, marketMedian: 17000, marketHigh: 19000 },
-  "926": { newCarPrice: 143800, marketLow: 15000, marketMedian: 17000, marketHigh: 19000 },
+  // 2013 款起亚 K3 两条档案共用同一组市场参考价与结合车况的价格区间
+  "001": { newCarPrice: 143800, marketLow: 15000, marketMedian: 17000, marketHigh: 19000, conditionAdjustedLow: 8500, conditionAdjustedHigh: 10000 },
+  "926": { newCarPrice: 143800, marketLow: 15000, marketMedian: 17000, marketHigh: 19000, conditionAdjustedLow: 8500, conditionAdjustedHigh: 10000 },
   // 2019 款凯美瑞 2.5G，7 年 6.8 万公里
   "V001": { newCarPrice: 219800, marketLow: 12500, marketMedian: 13800, marketHigh: 15200 },
   // 2020 款途观L 330TSI，6 年 5.2 万公里
