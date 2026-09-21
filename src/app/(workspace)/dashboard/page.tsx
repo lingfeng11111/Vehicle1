@@ -44,6 +44,7 @@ const metricItems: Array<{ key: MetricKey; label: string; desc: string }> = [
 ];
 
 const defaultMetrics: Overview["metrics"] = { leads: 0, consultations: 0, reports: 0, conversions: 0, reportCount: 0, customerCount: 0, vehicleCount: 0, pending: 0 };
+const featuredVehicleOrder: string[] = ["001", "V004", "V001"];
 
 export default function DashboardPage() {
   const [data, setData] = useState<Overview | null>(null);
@@ -67,7 +68,14 @@ export default function DashboardPage() {
   const maxFocusCount = Math.max(...focusItems.map((focus) => focus.count), 1);
   const conversionRateValue = metrics.leads ? Math.min(100, Math.max(0, (metrics.conversions / metrics.leads) * 100)) : 0;
   const conversionRate = conversionRateValue.toFixed(1);
-  const featuredVehicles = vehicles.filter((vehicle) => vehicle.status === "AVAILABLE").slice(0, 3);
+  const availableVehicles = vehicles.filter((vehicle) => vehicle.status === "AVAILABLE");
+  const featuredVehicleCodes = new Set(featuredVehicleOrder);
+  const featuredVehicles = [
+    ...featuredVehicleOrder
+      .map((code) => availableVehicles.find((vehicle) => vehicle.code === code))
+      .filter((vehicle): vehicle is DashboardVehicle => vehicle !== undefined),
+    ...availableVehicles.filter((vehicle) => !featuredVehicleCodes.has(vehicle.code)),
+  ].slice(0, 3);
 
   return (
     <div className="min-w-0 bg-[#faf8f5] w-full max-w-[1720px] 2xl:max-w-[1880px] mx-auto space-y-6">
