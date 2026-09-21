@@ -310,7 +310,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
                       className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute bottom-1.5 left-2 rounded bg-stone-900/75 backdrop-blur-xs px-2 py-0.5 text-[10px] font-medium text-white shadow-xs">
-                      {({ V001: ["实车姿态", "机舱", "座舱", "后备箱"], V002: ["实车姿态", "仪表台", "后排座椅", "车尾"], V003: ["实车姿态", "驾驶舱", "仪表台", "后排内饰"], V004: ["实车姿态", "仪表台", "后排内饰", "驾驶舱"], V006: ["实车姿态", "前机舱", "仪表台", "后备箱"] } as Record<string, string[]>)[vehicle.code]?.[i] ?? "外观工况"}
+                      {visual.galleryLabels?.[i] ?? "外观工况"}
                     </div>
                   </div>
                 ))}

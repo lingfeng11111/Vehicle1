@@ -6,8 +6,9 @@ export const VEHICLE_PRICE_MAP: Record<
   string,
   { newCarPrice: number; marketLow: number; marketMedian: number; marketHigh: number }
 > = {
-  // 2013 款起亚 K3，13 年车龄 10 万公里，综合车况卖价 8500~10000
-  "001": { newCarPrice: 143800, marketLow: 12000, marketMedian: 14000, marketHigh: 16000 },
+  // 2013 款起亚 K3 两条档案共用同一组市场参考价
+  "001": { newCarPrice: 143800, marketLow: 15000, marketMedian: 17000, marketHigh: 19000 },
+  "926": { newCarPrice: 143800, marketLow: 15000, marketMedian: 17000, marketHigh: 19000 },
   // 2019 款凯美瑞 2.5G，7 年 6.8 万公里
   "V001": { newCarPrice: 219800, marketLow: 12500, marketMedian: 13800, marketHigh: 15200 },
   // 2020 款途观L 330TSI，6 年 5.2 万公里

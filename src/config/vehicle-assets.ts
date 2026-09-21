@@ -4,6 +4,7 @@
 export type VehicleVisualAsset = {
   coverUrl: string;
   gallery: string[];
+  galleryLabels?: string[];
   typeTag: string;
   colorTone: string;
 };
@@ -25,6 +26,7 @@ export const VEHICLE_IMAGE_MAP: Record<string, VehicleVisualAsset> = {
       "/v001-photos/cockpit.jpg",
       "/v001-photos/trunk.jpg",
     ],
+    galleryLabels: ["实车姿态", "机舱", "座舱", "后备箱"],
     typeTag: "B级家用标杆",
     colorTone: "#e6eaec",
   },
@@ -37,6 +39,7 @@ export const VEHICLE_IMAGE_MAP: Record<string, VehicleVisualAsset> = {
       "/v002-photos/rear-seat.jpg",
       "/v002-photos/rear.jpg",
     ],
+    galleryLabels: ["实车姿态", "仪表台", "后排座椅", "车尾"],
     typeTag: "德系大五座SUV",
     colorTone: "#ede9e4",
   },
@@ -49,6 +52,7 @@ export const VEHICLE_IMAGE_MAP: Record<string, VehicleVisualAsset> = {
       "/v003-photos/dashboard.jpg",
       "/v003-photos/rear-interior.jpg",
     ],
+    galleryLabels: ["实车姿态", "驾驶舱", "仪表台", "后排内饰"],
     typeTag: "运动商务座驾",
     colorTone: "#eee7e8",
   },
@@ -61,6 +65,7 @@ export const VEHICLE_IMAGE_MAP: Record<string, VehicleVisualAsset> = {
       "/v004-photos/rear-interior.jpg",
       "/v004-photos/cockpit.jpg",
     ],
+    galleryLabels: ["实车姿态", "仪表台", "后排内饰", "驾驶舱"],
     typeTag: "高保值省油代步",
     colorTone: "#e9ece7",
   },
@@ -84,6 +89,7 @@ export const VEHICLE_IMAGE_MAP: Record<string, VehicleVisualAsset> = {
       "/v005-photos/dashboard.jpg",
       "/v005-photos/trunk.jpg",
     ],
+    galleryLabels: ["实车姿态", "前机舱", "仪表台", "后备箱"],
     typeTag: "蓝鲸黄金动力SUV",
     colorTone: "#edeae4",
   },
@@ -227,6 +233,19 @@ export const VEHICLE_IMAGE_MAP: Record<string, VehicleVisualAsset> = {
     typeTag: "豪华动感轿车",
     colorTone: "#eee7e8",
   },
+  "926": {
+    // 起亚 K3：档案封面保留目标车辆原外观图，后续展示该车的机舱、仪表台与内饰
+    coverUrl: "/api/media/cmu95qyix0009uc3s1owl6jjr",
+    gallery: [
+      "/api/media/cmu95qyix0009uc3s1owl6jjr",
+      mediaAssetUrl("vehicle-926-engine-bay"),
+      mediaAssetUrl("vehicle-926-dashboard"),
+      mediaAssetUrl("vehicle-926-interior"),
+    ],
+    galleryLabels: ["外观", "发动机舱", "仪表台", "内饰"],
+    typeTag: "韩系通勤车",
+    colorTone: "#e6eaec",
+  },
 };
 
 export const DEFAULT_VEHICLE_ASSET: VehicleVisualAsset = {
@@ -288,7 +307,7 @@ export function getVehicleVisual(code: string, source?: VehicleVisualSource): Ve
   return {
     ...visual,
     coverUrl: coverImage,
-    gallery: [coverImage, ...visual.gallery.filter((url) => url !== coverImage)],
+    gallery: [coverImage, ...visual.gallery.filter((url) => url !== coverImage && url !== visual.coverUrl)],
     typeTag: displayTags[0] ?? visual.typeTag,
   };
 }
