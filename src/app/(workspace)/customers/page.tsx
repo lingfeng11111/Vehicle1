@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, Search, UsersRound, Sparkles, CarFront, FileText, Calendar, Phone, Tag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { CustomerDialog } from "@/components/features/customer-dialog";
@@ -67,12 +66,16 @@ function themeForSource(sourceChannel: string, index: number) {
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [query, setQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const load = () =>
-    fetch("/api/customers")
+  const load = () => {
+    setIsLoading(true);
+    return fetch("/api/customers")
       .then((response) => response.json())
       .then(setCustomers)
-      .catch(() => setCustomers([]));
+      .catch(() => setCustomers([]))
+      .finally(() => setIsLoading(false));
+  };
 
   useEffect(() => {
     void load();
@@ -129,7 +132,13 @@ export default function CustomersPage() {
 
       {/* 客户横向卡片列表 (多样化配色与商业质感) */}
       <div className="space-y-3.5">
-        {filtered.map((customer, index) => {
+        {isLoading ? (
+          <div className="space-y-3.5" aria-live="polite" aria-label="客户线索加载中">
+            {[0, 1, 2].map((item) => (
+              <div key={item} className="h-52 animate-pulse rounded-3xl border border-stone-200/80 bg-white" />
+            ))}
+          </div>
+        ) : filtered.map((customer, index) => {
           const demand = customer.demands[0];
           const focusTags = parseJsonList(demand?.focusTags);
           const firstReport = customer.salesCases.flatMap((c) => c.reports)[0];
@@ -139,7 +148,7 @@ export default function CustomersPage() {
           return (
             <article
               key={customer.id}
-              className={`group relative overflow-hidden rounded-3xl border border-stone-200/80 ${theme.cardBg} p-5 shadow-[0_8px_24px_-16px_rgba(28,25,23,0.35)] ${theme.hoverBorder} hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200`}
+              className={`content-visibility-auto group relative overflow-hidden rounded-3xl border border-stone-200/80 ${theme.cardBg} p-5 shadow-[0_8px_24px_-16px_rgba(28,25,23,0.35)] ${theme.hoverBorder} hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200`}
             >
               {/* 卡片右上角商业编号与几何同心圆装饰 */}
               <span className="pointer-events-none absolute right-4 top-3 font-mono text-[10px] text-stone-300 font-semibold select-none hidden sm:block">
@@ -253,6 +262,8 @@ export default function CustomersPage() {
                                   <img
                                     src={visual.coverUrl}
                                     alt={item.vehicle?.model || "意向车辆"}
+                                    loading="lazy"
+                                    decoding="async"
                                     onError={(e) => {
                                       e.currentTarget.src = CAR_FALLBACK_SVG;
                                     }}
@@ -303,7 +314,7 @@ export default function CustomersPage() {
           );
         })}
 
-        {filtered.length === 0 && (
+        {!isLoading && filtered.length === 0 && (
           <div className="rounded-3xl border border-dashed border-stone-200 bg-white flex flex-col items-center gap-3 px-6 py-16 text-center">
             <UsersRound className="size-8 text-stone-300" />
             <p className="text-xs font-semibold text-stone-500">当前没有匹配的客户线索。</p>

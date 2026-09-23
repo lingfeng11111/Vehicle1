@@ -7,7 +7,7 @@ import { VehicleDialog } from "@/components/features/vehicle-dialog";
 import { StatusBadge, VehicleStatusPair } from "@/components/app/status-badge";
 import { formatDate, formatMoney, STATUS_LABELS } from "@/lib/format";
 
-import { getVehicleDisplayTags, getVehicleVisual } from "@/config/vehicle-assets";
+import { CAR_FALLBACK_SVG, getVehicleDisplayTags, getVehicleVisual } from "@/config/vehicle-assets";
 
 type Vehicle = {
   id: string;
@@ -38,6 +38,7 @@ type Vehicle = {
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const ORDER_KEY = "vehicle-display-order-v1";
   const KIA_926_PLACEMENT_KEY = "vehicle-display-order-926-row3-second-v1";
@@ -90,8 +91,9 @@ export default function VehiclesPage() {
     setDragIndex(null);
   };
 
-  const load = () =>
-    fetch("/api/vehicles")
+  const load = () => {
+    setIsLoading(true);
+    return fetch("/api/vehicles")
       .then((response) => response.json())
       .then((data: Vehicle[]) => {
         const orderedVehicles = applyOrder(Array.isArray(data) ? data : [], loadOrder());
@@ -116,7 +118,9 @@ export default function VehiclesPage() {
 
         setVehicles(orderedVehicles);
       })
-      .catch(() => setVehicles([]));
+      .catch(() => setVehicles([]))
+      .finally(() => setIsLoading(false));
+  };
 
   useEffect(() => {
     void load();
@@ -149,7 +153,13 @@ export default function VehiclesPage() {
 
       {/* 车辆展厅网格卡片 */}
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-        {vehicles.map((vehicle, index) => {
+        {isLoading ? (
+          <div className="col-span-full grid gap-5 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" aria-live="polite" aria-label="车辆档案加载中">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="h-[32rem] animate-pulse rounded-3xl border border-stone-200/80 bg-white" />
+            ))}
+          </div>
+        ) : vehicles.map((vehicle, index) => {
           const inspection = vehicle.inspections[0];
           const market = vehicle.marketSnapshots[0];
           const visual = getVehicleVisual(vehicle.code, vehicle);
@@ -163,13 +173,18 @@ export default function VehiclesPage() {
               onDragEnd={() => setDragIndex(null)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(index)}
-              className={`group flex flex-col rounded-3xl border border-stone-200/80 bg-white shadow-xs hover:shadow-xl hover:border-amber-300/80 active:border-amber-300/80 active:scale-[0.99] transition-all duration-200 overflow-hidden ${dragIndex === index ? "opacity-50 ring-2 ring-amber-400" : ""}`}
+              className={`content-visibility-auto group flex flex-col rounded-3xl border border-stone-200/80 bg-white shadow-xs hover:shadow-xl hover:border-amber-300/80 active:border-amber-300/80 active:scale-[0.99] transition-all duration-200 overflow-hidden ${dragIndex === index ? "opacity-50 ring-2 ring-amber-400" : ""}`}
             >
               {/* 顶部高定真实车辆摄影封套 */}
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-stone-100">
                 <img
                   src={visual.coverUrl}
                   alt={vehicle.model}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(event) => {
+                    event.currentTarget.src = CAR_FALLBACK_SVG;
+                  }}
                   className="size-full object-cover transition-transform duration-700 group-hover:scale-108 group-active:scale-105"
                 />
                 {/* 几何圆环暗纹与微渐变遮罩 */}
@@ -336,7 +351,7 @@ export default function VehiclesPage() {
         })}
       </div>
 
-      {vehicles.length === 0 && (
+      {!isLoading && vehicles.length === 0 && (
         <div className="rounded-3xl border border-dashed border-stone-200 bg-white px-6 py-16 text-center text-stone-400">
           <CarFront className="size-8 mx-auto text-stone-300" />
           <p className="mt-2 text-xs font-semibold text-stone-600">暂无入库车辆档案</p>

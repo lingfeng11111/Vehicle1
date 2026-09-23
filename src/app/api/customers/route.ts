@@ -44,14 +44,30 @@ const customerSchema = z.object({
 export async function GET() {
   const customers = await db.customer.findMany({
     include: {
-      demands: { orderBy: { createdAt: "desc" } },
-      salesCases: {
-        include: {
-          vehicle: true,
-          reports: { orderBy: { version: "desc" }, take: 1 },
-          events: { orderBy: { eventTime: "desc" } },
+      demands: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          focusTags: true,
+          usageScene: true,
+          budgetMin: true,
+          budgetMax: true,
         },
+      },
+      salesCases: {
         orderBy: { updatedAt: "desc" },
+        select: {
+          id: true,
+          vehicle: {
+            select: {
+              code: true,
+              model: true,
+              coverImage: true,
+              displayTags: true,
+            },
+          },
+          reports: { orderBy: { version: "desc" }, take: 1, select: { id: true } },
+        },
       },
     },
     orderBy: { updatedAt: "desc" },

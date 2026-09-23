@@ -269,18 +269,46 @@ export const DEFAULT_VEHICLE_ASSET: VehicleVisualAsset = {
 
 export function getDynamicVehicleAsset(code: string): VehicleVisualAsset {
   const num = parseInt(code.replace(/\D/g, ""), 10) || 1;
-  const seedA = 1000 + num * 7;
-  const seedB = 2000 + num * 13;
-  const seedC = 3000 + num * 29;
-  const cover = `https://loremflickr.com/640/400/usedcar,sedan?lock=${seedA}`;
-  const engine = `https://loremflickr.com/640/400/car,engine?lock=${seedB}`;
-  const cockpit = `https://loremflickr.com/640/400/car,cockpit?lock=${seedC}`;
   const tags = ["品质轿车", "品质SUV", "运动座驾", "经济代步", "新能源领航", "多功能SUV"];
   const tones = ["#e6eaec", "#ede9e4", "#eee7e8", "#e9ece7", "#e3eaec", "#edeae4"];
   const choice = num % 6;
+  // 展厅列表必须能够在内网和离线演示中稳定显示，不能依赖外部图片站。
+  // 用仓库内已有的真实车辆照片做确定性兜底，避免外部请求失败后出现空白卡片。
+  const localAssets = [
+    {
+      coverUrl: "/v001-photos/cover.jpg",
+      gallery: ["/v001-photos/cover.jpg", "/v001-photos/engine.jpg", "/v001-photos/cockpit.jpg", "/v001-photos/trunk.jpg"],
+      galleryLabels: ["实车姿态", "机舱", "座舱", "后备箱"],
+    },
+    {
+      coverUrl: "/v002-photos/cover.jpg",
+      gallery: ["/v002-photos/cover.jpg", "/v002-photos/cockpit.jpg", "/v002-photos/rear-seat.jpg", "/v002-photos/rear.jpg"],
+      galleryLabels: ["实车姿态", "仪表台", "后排座椅", "车尾"],
+    },
+    {
+      coverUrl: "/v003-photos/cover.jpg",
+      gallery: ["/v003-photos/cover.jpg", "/v003-photos/cockpit.jpg", "/v003-photos/dashboard.jpg", "/v003-photos/rear-interior.jpg"],
+      galleryLabels: ["实车姿态", "驾驶舱", "仪表台", "后排内饰"],
+    },
+    {
+      coverUrl: "/v004-photos/cover.jpg",
+      gallery: ["/v004-photos/cover.jpg", "/v004-photos/dashboard.jpg", "/v004-photos/rear-interior.jpg", "/v004-photos/cockpit.jpg"],
+      galleryLabels: ["实车姿态", "仪表台", "后排内饰", "驾驶舱"],
+    },
+    {
+      coverUrl: "/v005-photos/cover.jpg",
+      gallery: ["/v005-photos/cover.jpg", "/v005-photos/engine.jpg", "/v005-photos/dashboard.jpg", "/v005-photos/trunk.jpg"],
+      galleryLabels: ["实车姿态", "前机舱", "仪表台", "后备箱"],
+    },
+    {
+      coverUrl: "/v001-photos/cover.jpg",
+      gallery: ["/v001-photos/cover.jpg", "/v001-photos/cockpit.jpg", "/v001-photos/engine.jpg"],
+      galleryLabels: ["实车姿态", "座舱", "机舱"],
+    },
+  ];
+  const asset = localAssets[choice] ?? localAssets[0];
   return {
-    coverUrl: cover,
-    gallery: [cover, engine, cockpit],
+    ...asset,
     typeTag: tags[choice],
     colorTone: tones[choice],
   };
